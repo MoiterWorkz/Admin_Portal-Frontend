@@ -15,6 +15,8 @@ function AppWrapper() {
 function App() {
   const [role, setRole] = useState("");
   const { showAlert } = useAlert();
+  console.log("check");
+
   // Override default alert
   useEffect(() => {
     window.alert = (message) => {
