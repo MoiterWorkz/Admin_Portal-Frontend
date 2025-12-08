@@ -4,23 +4,8 @@ import {
   ChevronRight,
   ChevronLeft,
   LayoutGrid,
-  PackagePlus,
-  ShieldCheck,
-  CalculatorIcon,
-  User,
-  Wallet,
-  BarChart2,
-  FileCheck,
-  Shield,
-  Activity,
-  FileText,
-  Users,
-  Settings,
   ChevronDown,
   ChevronUp,
-  FileTextIcon,
-  UserCheck2Icon,
-  Database,
   LoaderCircle,
 } from "lucide-react";
 import "../styles/styles.css";
@@ -43,6 +28,14 @@ import ReportsAndAnalytics from "../features/reportsAnalytics";
 import TransactionsAnalystics from "../features/TransactionsManagement/TransactionsAnalystics";
 import MerchantApproval from "../components/merchantapproval";
 import PartnerE_MoneyApprovalApproval from "../components/PartnerE-MoneyApproval";
+import Dashboard from "../features/SmartTeenz/SmartTeenzDashboard";
+import Advertisement from "../features/SmartTeenz/Advertisement";
+import Reports from "../features/SmartTeenz/Reports";
+import Alerts from "../features/SmartTeenz/Alerts";
+import KYCApproval from "../features/SmartTeenz/KYCApproval";
+import QuizManagement from "../features/SmartTeenz/QuizManagement";
+import Rewards from "../features/SmartTeenz/Rewards";
+import UserManagement from "../features/SmartTeenz/UserManagement";
 
 export default function CheckersDashboardLayout() {
   const [activeTab, setActiveTab] = useState("0");
@@ -130,6 +123,7 @@ export default function CheckersDashboardLayout() {
     const tabMap = {
       0: <Maincheckerdashboard />,
       1: <Maincheckerdashboard />,
+      2: <Maincheckerdashboard />,
       "0-0": <CustomerManagement />,
       "0-1": <Walletranscation />,
       "0-2": <TransactionsAnalystics />,
@@ -144,6 +138,16 @@ export default function CheckersDashboardLayout() {
       "1-2": <PartnerApproval />,
       "1-3": <MerchantApproval />,
       "1-4": <PartnerE_MoneyApprovalApproval />,
+      "1-5": <PartnerE_MoneyApprovalApproval />,
+      "1-6": <PartnerE_MoneyApprovalApproval />,
+      "2-0": <Dashboard />,
+      "2-1": <UserManagement />,
+      "2-2": <KYCApproval />,
+      "2-3": <Advertisement />,
+      "2-4": <QuizManagement />,
+      "2-5": <Rewards />,
+      "2-6": <Alerts />,
+      "2-7": <Reports />,
     };
 
     if (activeTab === "0-9") {
@@ -160,18 +164,6 @@ export default function CheckersDashboardLayout() {
       </div>
     );
   };
-  // Define dashboard children tabs
-  const dashboardTabs = [
-    "customer",
-    "wallet",
-    "transactions",
-    "compliance",
-    "risk",
-    "productperformance",
-    "partner",
-    "reports",
-    "system",
-  ];
 
   return (
     <div className="layout">
