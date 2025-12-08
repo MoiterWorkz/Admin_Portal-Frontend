@@ -107,35 +107,60 @@ const MerchantList = ({ scrollToTop, setFormOpen, setIsEditing }) => {
                 <tbody>
                   {paginatedData?.map((m, i) => (
                     <tr key={i} className="border-b hover:bg-muted/5">
-                      {columns.map((col) => (
-                        <td
-                          key={col.key}
-                          className={`p-2 text-xs ${
-                            col.key === "paymentType" &&
-                            "max-w-[220px] truncate"
-                          }`}
-                          title={col.key === "paymentType" && m[col.key]}
-                        >
-                          {editRow === i ? (
-                            <input
-                              type="text"
-                              value={editedData[col.key] || ""}
-                              onChange={(e) => handleChange(e, col.key)}
-                              className="w-full p-1 rounded bg-transparent border border-[#2e2e2e] text-[#e2e8f0] focus:outline-none"
-                            />
-                          ) : (
-                            <span
-                              className={
-                                col.key === "shopName"
-                                  ? "font-medium text-chart-5"
-                                  : "text-[#94a3b8] truncate"
-                              }
-                            >
-                              {m[col.key]}
-                            </span>
-                          )}
-                        </td>
-                      ))}
+                      {columns.map((col) => {
+                        const isStatus = col.key === "status";
+                        const isApproved = m[col.key] === 0 && isStatus;
+                        const isPending = m[col.key] === 1 && isStatus;
+                        const isRejected = m[col.key] === 2 && isStatus;
+                        const isRecheck = m[col.key] === 3 && isStatus;
+                        return (
+                          <td
+                            key={col.key}
+                            className={`p-2 text-xs ${
+                              col.key === "paymentType" &&
+                              "max-w-[220px] truncate"
+                            }`}
+                            title={col.key === "paymentType" && m[col.key]}
+                          >
+                            {editRow === i ? (
+                              <input
+                                type="text"
+                                value={editedData[col.key] || ""}
+                                onChange={(e) => handleChange(e, col.key)}
+                                className="w-full p-1 rounded bg-transparent border border-[#2e2e2e] text-[#e2e8f0] focus:outline-none"
+                              />
+                            ) : (
+                              <span
+                                className={`${
+                                  col.key === "shopName"
+                                    ? "font-medium text-chart-5"
+                                    : "truncate"
+                                } ${
+                                  isApproved
+                                    ? "checker text-[10px] p-1"
+                                    : isPending
+                                    ? "infra text-[10px] p-1"
+                                    : isRejected
+                                    ? "superuser text-[10px] p-1"
+                                    : isRecheck
+                                    ? "maker text-[10px] p-1"
+                                    : ""
+                                }`}
+                              >
+                                {isApproved
+                                  ? "Approved"
+                                  : isPending
+                                  ? "Pending"
+                                  : isRejected
+                                  ? "Rejected"
+                                  : isRecheck
+                                  ? "Recheck"
+                                  : m[col.key]}
+                              </span>
+                            )}
+                          </td>
+                        );
+                      })}
 
                       <td className="p-2 flex">
                         {editRow === i ? (
