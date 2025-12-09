@@ -46,6 +46,8 @@
   );
   --body-color: #0e0101;
 
+  /*smart teenz extra */
+
   /* //////////////////////////////base theme/////////////////////////////////////////// */
 
   /* --primary-color: #00d4aa;
@@ -337,4 +339,15 @@ table tbody tr td {
 input[type="time"]::-webkit-calendar-picker-indicator {
   filter: invert(54%) sepia(78%) saturate(300%) hue-rotate(120deg);
   opacity: 1;
+}
+/*smart teenz*/
+.icon-round {
+  border-radius: 50%;
+  border: 1px solid var(--borderBg-color);
+  box-shadow: 0 0 10px var(--borderBg-color);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 212, 170, 0.2),
+    rgba(0, 212, 170, 0.05)
+  );
 }
