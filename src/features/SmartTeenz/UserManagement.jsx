@@ -1,9 +1,7 @@
+import UserManagementMain from "./UserManagement/UserManagementMain";
+
 function UserManagement() {
-  return (
-    <div>
-      <h1>User Management!</h1>
-    </div>
-  );
+  return <UserManagementMain />;
 }
 
 export default UserManagement;

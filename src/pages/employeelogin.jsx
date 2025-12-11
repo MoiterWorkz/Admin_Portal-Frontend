@@ -87,8 +87,8 @@ const Employeelogin = () => {
       const authResponse = await axios.post(
         `${API_BASE_URL}/auth/api/AuthService/mobile-login`,
         {
-          mobileNumber: "9876543211",
-          password: "9876543211",
+          mobileNumber: "string",
+          password: "string",
         }
       );
 
@@ -137,7 +137,7 @@ const Employeelogin = () => {
       console.error("Login error:", err.response?.data || err.message);
       setError(
         err.response?.data?.message ||
-        "Login api failed. Please try again later"
+          "Login api failed. Please try again later"
       );
     } finally {
       setIsLoading(false);

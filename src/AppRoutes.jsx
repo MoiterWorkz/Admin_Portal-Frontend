@@ -8,6 +8,7 @@ import MakersDashboard from "./pages/makersDashboard";
 import SuperuserDashboard from "./pages/superuserDashboard";
 import CheckersDashboardLayout from "./pages/checkersdashboard";
 import MerchantCreation from "./features/merchantCreation/index";
+import QuizDetails from "./features/SmartTeenz/QuizManagement/QuizDetails";
 
 function AppRoutes({ setRole }) {
   return (

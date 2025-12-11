@@ -1,9 +1,7 @@
+import TeenzDashboard from "./Dashboard/TeenzDashboard";
+
 function SmartTeenzDashboard() {
-  return (
-    <div>
-      <h1>Smart Teenz Dashboard!</h1>
-    </div>
-  );
+  return <TeenzDashboard />;
 }
 
 export default SmartTeenzDashboard;

@@ -1,8 +1,18 @@
+import React, { useState } from "react";
+import QuizDetails from "./QuizManagement/QuizDetails";
+import QuizDashboard from "./QuizManagement/QuizDashboard";
+
 function QuizManagement() {
+  const [selectedQuiz, setSelectedQuiz] = useState(null);
+
   return (
-    <div>
-      <h1>Quiz Management!</h1>
-    </div>
+    <>
+      {selectedQuiz ? (
+        <QuizDetails quiz={selectedQuiz} setSelectedQuiz={setSelectedQuiz} />
+      ) : (
+        <QuizDashboard setSelectedQuiz={setSelectedQuiz} />
+      )}
+    </>
   );
 }
 

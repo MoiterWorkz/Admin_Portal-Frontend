@@ -45,6 +45,7 @@
     transparent
   );
   --body-color: #0e0101;
+  --white-color: #ffffff;
 
   /*smart teenz extra */
 
@@ -204,6 +205,13 @@ body {
 .guidelines-desc {
   @apply text-[12px] md:text-[14px] text-gray-400;
 }
+.heading-card-label {
+  @apply text-[14px] font-bold;
+  color: #ffffff;
+}
+.small-heading {
+  @apply text-[10px] font-bold;
+}
 
 /*------------------------------------------ table styles ---------------------------- */
 
@@ -350,4 +358,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     rgba(0, 212, 170, 0.2),
     rgba(0, 212, 170, 0.05)
   );
+}
+.white-color {
+  color: var(--white-color);
+  @apply text-[10px] sm:text-[12px];
+  font-weight: normal;
 }

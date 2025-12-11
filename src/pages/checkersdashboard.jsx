@@ -35,7 +35,7 @@ import Alerts from "../features/SmartTeenz/Alerts";
 import KYCApproval from "../features/SmartTeenz/KYCApproval";
 import QuizManagement from "../features/SmartTeenz/QuizManagement";
 import Rewards from "../features/SmartTeenz/Rewards";
-import UserManagement from "../features/SmartTeenz/UserManagement";
+// import UserManagement from "../features/SmartTeenz/UserManagement";
 
 export default function CheckersDashboardLayout() {
   const [activeTab, setActiveTab] = useState("0");
@@ -141,7 +141,7 @@ export default function CheckersDashboardLayout() {
       "1-5": <PartnerE_MoneyApprovalApproval />,
       "1-6": <PartnerE_MoneyApprovalApproval />,
       "2-0": <Dashboard />,
-      "2-1": <UserManagement />,
+
       "2-2": <KYCApproval />,
       "2-3": <Advertisement />,
       "2-4": <QuizManagement />,
@@ -203,8 +203,9 @@ export default function CheckersDashboardLayout() {
                 <div key={modIdx}>
                   <button
                     onClick={() => toggleDropdown(mod.module.trim(), tabKey)}
-                    className={`main-menu-list ${openDropdown === mod.module.trim() ? "active" : ""
-                      }`}
+                    className={`main-menu-list ${
+                      openDropdown === mod.module.trim() ? "active" : ""
+                    }`}
                   >
                     <LayoutGrid size={16} className="menu-icon" />
                     {!isCollapsed && (

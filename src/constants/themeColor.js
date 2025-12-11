@@ -1,32 +1,32 @@
 export const themeColors = {
-  red: {
-    "--primary-color": "red",
-    "--menu-hover-bg": "#1c1717",
-    "--borderBg-color": "#3b0000",
-    "--alert-shadow": "0 0 30px rgba(255, 0, 0, 0.3)",
-    "--sweeper-line-bg":
-      "linear-gradient(to right, transparent, rgba(255, 0, 0, 0.4), transparent)",
-    "--input-shadow": "0 0 0 3px rgba(255, 0, 0, 0.4)",
-    "--login-btn-shadow": "0 0 20px rgba(255, 0, 0, 0.4)",
-    "--login-box-corner-shadow": "0 0 30px 10px rgba(178, 34, 34, 0.6)",
-    "--login-card-animated-bg":
-      "linear-gradient(270deg, rgba(26, 14, 14, 0.884), rgba(12, 8, 8, 0.6), rgba(26, 14, 14, 0.8))",
-    "--card-footer-line": "rgba(255, 0, 0, 0.15)",
-    "--dash-card-hover-bg":
-      "linear-gradient(135deg, #ff00001f 0%, #ff000008 30%, #ff000014 70%, #ff00000f 100%)",
-    "--dash-card-hover-shadow":
-      "0 25px 50px #ff00000f, 0 15px 35px #0000001f, inset 0 1px #ffffff1f, inset 0 -1px #ff000008, 0 0 40px #ff000014",
-    "--infra-shadow":
-      "0 0 10px rgba(255, 0, 0, 0.6), 0 0 20px rgba(255, 0, 0, 0.4)",
-    "--corner-box-border": "#ff000080",
-    "--glass-card-linear-bg":
-      "linear-gradient(135deg, #ff000008 0%, #0000 100%)",
-    "--cards-bg": "#120505",
-    "--menu-active-bg": "#b91c1c1a",
-    "--glass-wave":
-      "linear-gradient(120deg, transparent, rgba(0, 255, 200, 0.15), transparent)",
-    "--body-color": "#0e0101",
-  },
+  // red: {
+  //   "--primary-color": "red",
+  //   "--menu-hover-bg": "#1c1717",
+  //   "--borderBg-color": "#3b0000",
+  //   "--alert-shadow": "0 0 30px rgba(255, 0, 0, 0.3)",
+  //   "--sweeper-line-bg":
+  //     "linear-gradient(to right, transparent, rgba(255, 0, 0, 0.4), transparent)",
+  //   "--input-shadow": "0 0 0 3px rgba(255, 0, 0, 0.4)",
+  //   "--login-btn-shadow": "0 0 20px rgba(255, 0, 0, 0.4)",
+  //   "--login-box-corner-shadow": "0 0 30px 10px rgba(178, 34, 34, 0.6)",
+  //   "--login-card-animated-bg":
+  //     "linear-gradient(270deg, rgba(26, 14, 14, 0.884), rgba(12, 8, 8, 0.6), rgba(26, 14, 14, 0.8))",
+  //   "--card-footer-line": "rgba(255, 0, 0, 0.15)",
+  //   "--dash-card-hover-bg":
+  //     "linear-gradient(135deg, #ff00001f 0%, #ff000008 30%, #ff000014 70%, #ff00000f 100%)",
+  //   "--dash-card-hover-shadow":
+  //     "0 25px 50px #ff00000f, 0 15px 35px #0000001f, inset 0 1px #ffffff1f, inset 0 -1px #ff000008, 0 0 40px #ff000014",
+  //   "--infra-shadow":
+  //     "0 0 10px rgba(255, 0, 0, 0.6), 0 0 20px rgba(255, 0, 0, 0.4)",
+  //   "--corner-box-border": "#ff000080",
+  //   "--glass-card-linear-bg":
+  //     "linear-gradient(135deg, #ff000008 0%, #0000 100%)",
+  //   "--cards-bg": "#120505",
+  //   "--menu-active-bg": "#b91c1c1a",
+  //   "--glass-wave":
+  //     "linear-gradient(120deg, transparent, rgba(0, 255, 200, 0.15), transparent)",
+  //   "--body-color": "#0e0101",
+  // },
 
   base: {
     "--primary-color": "#00d4aa",
