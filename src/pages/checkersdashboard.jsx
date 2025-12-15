@@ -35,6 +35,7 @@ import Alerts from "../features/SmartTeenz/Alerts";
 import KYCApproval from "../features/SmartTeenz/KYCApproval";
 import QuizManagement from "../features/SmartTeenz/QuizManagement";
 import Rewards from "../features/SmartTeenz/Rewards";
+import Ads from "../features/SmartTeenz/Ads";
 // import UserManagement from "../features/SmartTeenz/UserManagement";
 
 export default function CheckersDashboardLayout() {
@@ -54,12 +55,18 @@ export default function CheckersDashboardLayout() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        setModules(parsed?.moduleAccess || []);
+        setModules(
+          (parsed?.moduleAccess || []).map((m) => ({
+            ...m,
+            screens: [...m.screens, "Ads"],
+          }))
+        );
       } catch (err) {
         console.error("Invalid localStorage data", err);
       }
     }
   }, []);
+
   const handleLogout = async () => {
     setIsLoading(true);
     try {
@@ -132,7 +139,7 @@ export default function CheckersDashboardLayout() {
       "0-5": <Productperformance />,
       "0-6": <PartnerMangement />,
       "0-7": <ReportsAndAnalytics />,
-      "0-8": <SystemSettings />,
+      "0-8": <Ads />,
       "1-0": <EmployeeApproval />,
       "1-1": <ProductApproval />,
       "1-2": <PartnerApproval />,
@@ -141,7 +148,6 @@ export default function CheckersDashboardLayout() {
       "1-5": <PartnerE_MoneyApprovalApproval />,
       "1-6": <PartnerE_MoneyApprovalApproval />,
       "2-0": <Dashboard />,
-
       "2-2": <KYCApproval />,
       "2-3": <Advertisement />,
       "2-4": <QuizManagement />,

@@ -364,3 +364,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   @apply text-[10px] sm:text-[12px];
   font-weight: normal;
 }
+
+.white-color-font {
+  color: var(--white-color);
+  @apply text-[16px] sm:text-[14px];
+  font-weight: normal;
+}
