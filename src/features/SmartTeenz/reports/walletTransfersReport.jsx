@@ -18,6 +18,7 @@ import {
 import { currency } from "../../../helper";
 import PaginationButton from "../../../components/reusable/paginationButton";
 import ReportHeader from "../../../components/reusable/reportsHeader";
+import WalletTransfersTable from "./table/walletTranfersTable";
 /**
  * WalletTransfersReport
  * - Responsive table driven by `tableColumns` (loops)
@@ -60,118 +61,6 @@ export default function WalletTransfersReport({
     );
     return ["all", ...s];
   }, [rowsSource]);
-
-  // table column definitions (loop-driven)
-  const tableColumns = [
-    {
-      key: "txn",
-      label: "Transaction ID",
-      align: "left",
-      render: (r) => (
-        <span className="text-primary font-mono text-xs whitespace-nowrap">
-          {r.id}
-        </span>
-      ),
-    },
-    {
-      key: "sender",
-      label: "Sender",
-      align: "left",
-      render: (r) => (
-        <div className="flex flex-col">
-          <span className="text-foreground font-medium">{r.senderName}</span>
-          <span className="text-muted-foreground text-xs">{r.senderRole}</span>
-        </div>
-      ),
-    },
-    {
-      key: "receiver",
-      label: "Receiver",
-      align: "left",
-      render: (r) => (
-        <div className="flex flex-col">
-          <span className="text-foreground font-medium">{r.receiverName}</span>
-          <span className="text-muted-foreground text-xs">
-            {r.receiverRole}
-          </span>
-        </div>
-      ),
-    },
-    {
-      key: "type",
-      label: "Type",
-      align: "left",
-      render: (r) => (
-        <div className="flex items-center gap-1.5 text-primary text-xs">
-          <span>{r.type?.split("→")?.[0] ?? ""}</span>
-          <ArrowRight className="w-3 h-3" />
-          <span>{r.type?.split("→")?.[1] ?? ""}</span>
-        </div>
-      ),
-    },
-    {
-      key: "senderPhone",
-      label: "Sender Phone",
-      align: "left",
-      render: (r) => <span className="font-mono text-xs">{r.senderPhone}</span>,
-    },
-    {
-      key: "receiverPhone",
-      label: "Receiver Phone",
-      align: "left",
-      render: (r) => (
-        <span className="font-mono text-xs">{r.receiverPhone}</span>
-      ),
-    },
-    {
-      key: "amount",
-      label: "Amount",
-      align: "right",
-      render: (r) => (
-        <span className="text-chart-5 font-medium">{currency(r.amount)}</span>
-      ),
-    },
-    { key: "mode", label: "Mode", align: "left", render: (r) => r.mode },
-    {
-      key: "datetime",
-      label: "Date & Time",
-      align: "left",
-      render: (r) => (
-        <span className="text-muted-foreground text-xs">{r.datetime}</span>
-      ),
-    },
-    {
-      key: "status",
-      label: "Status",
-      align: "left",
-      render: (r) => {
-        const s = (r.status ?? "").toString().toLowerCase();
-        const cls =
-          s === "success"
-            ? "bg-green-500/10 text-green-400 border-green-500/30"
-            : s === "pending"
-            ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/30"
-            : "bg-red-500/10 text-red-400 border-red-500/30";
-        return (
-          <span
-            className={`px-2.5 py-1 rounded-full text-xs border font-medium ${cls}`}
-          >
-            {r.status}
-          </span>
-        );
-      },
-    },
-    {
-      key: "notes",
-      label: "Notes",
-      align: "left",
-      render: (r) => (
-        <span className="truncate max-w-[180px] inline-block text-xs">
-          {r.notes}
-        </span>
-      ),
-    },
-  ];
 
   // filtering by query + type + status
   const filteredRows = useMemo(() => {
@@ -317,63 +206,7 @@ export default function WalletTransfersReport({
           </div>
 
           <div className="table-container">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/30 sticky top-0">
-                <tr className="border-b border-border/30">
-                  {tableColumns.map((col) => (
-                    <th
-                      key={col.key}
-                      className={`text-left p-3 text-xs text-muted-foreground uppercase tracking-wider whitespace-nowrap ${
-                        col.align === "right"
-                          ? "text-right"
-                          : col.align === "center"
-                          ? "text-center"
-                          : "text-left"
-                      }`}
-                    >
-                      {col.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-
-              <tbody>
-                {paginatedRows.length > 0 ? (
-                  paginatedRows.map((row, idx) => (
-                    <tr
-                      key={row.id + idx}
-                      className={`border-b border-border/10 transition-colors ${
-                        idx % 2 === 0 ? "bg-transparent" : "bg-muted/10"
-                      }`}
-                    >
-                      {tableColumns.map((col) => (
-                        <td
-                          key={col.key}
-                          className={`p-3 whitespace-nowrap ${
-                            col.align === "right"
-                              ? "text-right"
-                              : col.align === "center"
-                              ? "text-center"
-                              : ""
-                          }`}
-                        >
-                          {col.render(row)}
-                        </td>
-                      ))}
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan={tableColumns.length}
-                      className="text-center py-6 text-gray-500"
-                    >
-                      No records found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            <WalletTransfersTable rows={paginatedRows} />
           </div>
 
           {/* Footer / pagination */}

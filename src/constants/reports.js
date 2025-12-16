@@ -321,3 +321,49 @@ export const linkedOptions = [
   { value: "linked", label: "Linked" },
   { value: "unlinked", label: "Unlinked" },
 ];
+
+export const PARENT_TABLE_HEADERS = [
+  { label: "Parent", align: "left" },
+  { label: "Gender", align: "left" },
+  { label: "DOB", align: "left" },
+  { label: "Age", align: "left" },
+  { label: "Phone", align: "left" },
+  { label: "Email", align: "left" },
+  { label: "PAN", align: "left" },
+  { label: "Aadhar", align: "left" },
+  { label: "KYC Status", align: "left" },
+  { label: "KYC Type", align: "left" },
+  { label: "Address", align: "left" },
+  { label: "City", align: "left" },
+  { label: "Teens", align: "center" },
+  { label: "Created", align: "left" },
+  { label: "Balance", align: "right" },
+  { label: "Sent", align: "right" },
+];
+
+export const CHORES_TABLE_HEADERS = [
+  { label: "Chore Title", align: "left" },
+  { label: "Description", align: "left" },
+  { label: "Parent", align: "left" },
+  { label: "Teen", align: "left" },
+  { label: "Assigned", align: "left" },
+  { label: "Due Date", align: "left" },
+  { label: "Completed", align: "left" },
+  { label: "Status", align: "left" },
+  { label: "Reward", align: "right" },
+  { label: "Verified", align: "left" },
+];
+
+export const WALLET_TABLE_HEADERS = [
+  { label: "Transaction ID", align: "left" },
+  { label: "Sender", align: "left" },
+  { label: "Receiver", align: "left" },
+  { label: "Type", align: "left" },
+  { label: "Sender Phone", align: "left" },
+  { label: "Receiver Phone", align: "left" },
+  { label: "Amount", align: "right" },
+  { label: "Mode", align: "left" },
+  { label: "Date & Time", align: "left" },
+  { label: "Status", align: "left" },
+  { label: "Notes", align: "left" },
+];

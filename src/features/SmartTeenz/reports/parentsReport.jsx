@@ -1,13 +1,6 @@
 // ParentsReport.jsx
-import React, { useMemo, useState, useEffect } from "react";
-import {
-  User,
-  Download,
-  FileSpreadsheet,
-  ChevronRight,
-  Search,
-  ChevronLeft,
-} from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { User, Search } from "lucide-react";
 import { parentRecords } from "../../../constants/reports";
 import { useReportExport } from "../../../hooks/useReportExport";
 import {
@@ -18,6 +11,7 @@ import {
 import { currency } from "../../../helper";
 import PaginationButton from "../../../components/reusable/paginationButton";
 import ReportHeader from "../../../components/reusable/reportsHeader";
+import ParentsTable from "./table/parentsTable";
 
 /**
  * ParentsReport
@@ -38,117 +32,6 @@ export default function ParentsReport({
   // Pagination state
   const itemsPerPage = 8;
   const [currentPage, setCurrentPage] = useState(1);
-
-  // Column config drives both <th> and <td> rendering
-  const tableColumns = [
-    {
-      key: "parent",
-      label: "Parent",
-      align: "left",
-      render: (row) => (
-        <div className="flex items-center gap-2.5">
-          <img
-            src={row.avatar}
-            alt={row.name}
-            className="w-6 h-6 rounded-full object-cover border border-border/30"
-          />
-          <span className="text-foreground font-medium truncate max-w-[140px]">
-            {row.name}
-          </span>
-        </div>
-      ),
-    },
-    { key: "gender", label: "Gender", align: "left", render: (r) => r.gender },
-    { key: "dob", label: "DOB", align: "left", render: (r) => r.dob },
-    { key: "age", label: "Age", align: "left", render: (r) => r.age },
-    {
-      key: "phone",
-      label: "Phone",
-      align: "left",
-      render: (r) => <span className="font-mono text-xs">{r.phone}</span>,
-    },
-    {
-      key: "email",
-      label: "Email",
-      align: "left",
-      render: (r) => (
-        <span className="truncate max-w-[160px] inline-block">{r.email}</span>
-      ),
-    },
-    { key: "pan", label: "PAN", align: "left", render: (r) => r.pan },
-    { key: "aadhar", label: "Aadhar", align: "left", render: (r) => r.aadhar },
-    {
-      key: "kycStatus",
-      label: "KYC Status",
-      align: "left",
-      render: (r) => {
-        const isCompleted = r.kycStatus?.toLowerCase?.() === "completed";
-        const isPending = r.kycStatus?.toLowerCase?.() === "pending";
-        const isRejected = r.kycStatus?.toLowerCase?.() === "rejected";
-        const bg = isCompleted
-          ? "bg-green-500/10 text-green-400 border-green-500/30"
-          : isPending
-          ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/30"
-          : isRejected
-          ? "bg-red-500/10 text-red-400 border-red-500/30"
-          : "bg-gray-100 text-gray-600";
-        return (
-          <span
-            className={`px-2.5 py-1 rounded-full text-xs border font-medium ${bg}`}
-          >
-            {r.kycStatus}
-          </span>
-        );
-      },
-    },
-    {
-      key: "kycType",
-      label: "KYC Type",
-      align: "left",
-      render: (r) => <span className="text-xs">{r.kycType}</span>,
-    },
-    {
-      key: "address",
-      label: "Address",
-      align: "left",
-      render: (r) => (
-        <span className="truncate max-w-[180px] inline-block">{r.address}</span>
-      ),
-    },
-    { key: "city", label: "City", align: "left", render: (r) => r.city },
-    {
-      key: "teens",
-      label: "Teens",
-      align: "center",
-      render: (r) => (
-        <span className="text-chart-5 font-medium">{r.teens}</span>
-      ),
-    },
-    {
-      key: "created",
-      label: "Created",
-      align: "left",
-      render: (r) => (
-        <span className="text-xs text-muted-foreground">{r.created}</span>
-      ),
-    },
-    {
-      key: "balance",
-      label: "Balance",
-      align: "right",
-      render: (r) => (
-        <span className="text-chart-5 font-medium">{currency(r.balance)}</span>
-      ),
-    },
-    {
-      key: "sent",
-      label: "Sent",
-      align: "right",
-      render: (r) => (
-        <span className="text-red-400 font-medium">{currency(r.sent)}</span>
-      ),
-    },
-  ];
 
   // filtering by search query + status filter
   const filteredRows = useMemo(() => {
@@ -252,6 +135,7 @@ export default function ParentsReport({
   const startIndex = totalEntries === 0 ? 0 : (currentPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, totalEntries);
   const paginatedRows = filteredRows.slice(startIndex, endIndex);
+  console.log(paginatedRows);
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -316,63 +200,7 @@ export default function ParentsReport({
           </div>
 
           <div className="table-container">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/30 sticky top-0">
-                <tr className="border-b border-border/30">
-                  {tableColumns.map((col) => (
-                    <th
-                      key={col.key}
-                      className={`text-left p-3 text-xs text-muted-foreground uppercase tracking-wider whitespace-nowrap ${
-                        col.align === "right"
-                          ? "text-right"
-                          : col.align === "center"
-                          ? "text-center"
-                          : "text-left"
-                      }`}
-                    >
-                      {col.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-
-              <tbody>
-                {paginatedRows.length > 0 ? (
-                  paginatedRows.map((row, idx) => (
-                    <tr
-                      key={row.id}
-                      className={`border-b border-border/10 transition-colors ${
-                        idx % 2 === 0 ? "bg-transparent" : "bg-muted/10"
-                      }`}
-                    >
-                      {tableColumns.map((col) => (
-                        <td
-                          key={col.key}
-                          className={`p-3 whitespace-nowrap ${
-                            col.align === "right"
-                              ? "text-right"
-                              : col.align === "center"
-                              ? "text-center"
-                              : ""
-                          }`}
-                        >
-                          {col.render(row)}
-                        </td>
-                      ))}
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan={tableColumns.length}
-                      className="text-center py-4 text-gray-500"
-                    >
-                      No records found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            <ParentsTable rows={paginatedRows} />
           </div>
 
           {/* Footer */}

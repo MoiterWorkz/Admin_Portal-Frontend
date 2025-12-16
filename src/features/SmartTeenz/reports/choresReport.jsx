@@ -18,6 +18,7 @@ import {
 import { currency } from "../../../helper";
 import PaginationButton from "../../../components/reusable/paginationButton";
 import ReportHeader from "../../../components/reusable/reportsHeader";
+import ChoresTable from "./table/choresTable";
 
 /**
  * ChoresReport
@@ -41,106 +42,6 @@ export default function ChoresReport({ data = undefined, isOpen, onToggle }) {
   const [statusFilter, setStatusFilter] = useState("all"); // All | Completed | Pending | Overdue
   const itemsPerPage = 8;
   const [currentPage, setCurrentPage] = useState(1);
-
-  // columns config
-  const tableColumns = [
-    {
-      key: "title",
-      label: "Chore Title",
-      align: "left",
-      render: (r) => (
-        <span className="text-foreground font-medium whitespace-nowrap">
-          {r.title}
-        </span>
-      ),
-    },
-    {
-      key: "description",
-      label: "Description",
-      align: "left",
-      render: (r) => (
-        <span className="truncate max-w-[240px] inline-block text-xs">
-          {r.description}
-        </span>
-      ),
-    },
-    { key: "parent", label: "Parent", align: "left", render: (r) => r.parent },
-    { key: "teen", label: "Teen", align: "left", render: (r) => r.teen },
-    {
-      key: "assigned",
-      label: "Assigned",
-      align: "left",
-      render: (r) => (
-        <span className="text-muted-foreground text-xs">{r.assigned}</span>
-      ),
-    },
-    {
-      key: "dueDate",
-      label: "Due Date",
-      align: "left",
-      render: (r) => (
-        <span className="text-muted-foreground text-xs">{r.dueDate}</span>
-      ),
-    },
-    {
-      key: "completed",
-      label: "Completed",
-      align: "left",
-      render: (r) => (
-        <span className="text-muted-foreground text-xs">{r.completed}</span>
-      ),
-    },
-    {
-      key: "status",
-      label: "Status",
-      align: "left",
-      render: (r) => {
-        const s = (r.status ?? "").toString().toLowerCase();
-        const cls =
-          s === "completed"
-            ? "bg-green-500/10 text-green-400 border-green-500/30"
-            : s === "pending"
-            ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/30"
-            : s === "overdue"
-            ? "bg-red-500/10 text-red-400 border-red-500/30"
-            : "bg-gray-100 text-gray-600";
-        return (
-          <span
-            className={`px-2.5 py-1 rounded-full text-xs border font-medium ${cls}`}
-          >
-            {r.status}
-          </span>
-        );
-      },
-    },
-    {
-      key: "reward",
-      label: "Reward",
-      align: "right",
-      render: (r) => (
-        <span className="text-chart-5 font-medium">{currency(r.reward)}</span>
-      ),
-    },
-    {
-      key: "verified",
-      label: "Verified",
-      align: "left",
-      render: (r) => {
-        const v = (r.verified ?? "").toString().toLowerCase();
-        const cls =
-          v === "verified"
-            ? "bg-green-500/10 text-green-400 border-green-500/30"
-            : "bg-yellow-500/10 text-yellow-400 border-yellow-500/30";
-        return (
-          <span
-            className={`px-2.5 py-1 rounded-full text-xs border font-medium ${cls}`}
-          >
-            {r.verified}
-          </span>
-        );
-      },
-    },
-  ];
 
   // filtering logic (query + status)
   const filteredRows = useMemo(() => {
@@ -278,65 +179,8 @@ export default function ChoresReport({ data = undefined, isOpen, onToggle }) {
 
           {/* table */}
           <div className="table-container">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/30 sticky top-0">
-                <tr className="border-b border-border/30">
-                  {tableColumns.map((col) => (
-                    <th
-                      key={col.key}
-                      className={`text-left p-3 text-xs text-muted-foreground uppercase tracking-wider whitespace-nowrap ${
-                        col.align === "right"
-                          ? "text-right"
-                          : col.align === "center"
-                          ? "text-center"
-                          : "text-left"
-                      }`}
-                    >
-                      {col.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-
-              <tbody>
-                {paginatedRows.length > 0 ? (
-                  paginatedRows.map((row, idx) => (
-                    <tr
-                      key={row.id}
-                      className={`border-b border-border/10 transition-colors ${
-                        idx % 2 === 0 ? "bg-transparent" : "bg-muted/10"
-                      }`}
-                    >
-                      {tableColumns.map((col) => (
-                        <td
-                          key={col.key}
-                          className={`p-3 whitespace-nowrap ${
-                            col.align === "right"
-                              ? "text-right"
-                              : col.align === "center"
-                              ? "text-center"
-                              : ""
-                          }`}
-                        >
-                          {col.render(row)}
-                        </td>
-                      ))}
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan={tableColumns.length}
-                      className="text-center py-6 text-gray-500"
-                    >
-                      No records found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            <ChoresTable rows={paginatedRows} />
           </div>
-
           {/* footer / pagination */}
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">
