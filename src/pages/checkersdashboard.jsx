@@ -30,7 +30,7 @@ import MerchantApproval from "../components/merchantapproval";
 import PartnerE_MoneyApprovalApproval from "../components/PartnerE-MoneyApproval";
 import Dashboard from "../features/SmartTeenz/SmartTeenzDashboard";
 import Advertisement from "../features/SmartTeenz/Advertisement";
-import Reports from "../features/SmartTeenz/Reports";
+import Reports from "../features/SmartTeenz/reports/index";
 import Alerts from "../features/SmartTeenz/Alerts";
 import KYCApproval from "../features/SmartTeenz/KYCApproval";
 import QuizManagement from "../features/SmartTeenz/QuizManagement";
@@ -131,7 +131,7 @@ export default function CheckersDashboardLayout() {
       "0-4": <RiskManagement />,
       "0-5": <Productperformance />,
       "0-6": <PartnerMangement />,
-      "0-7": <ReportsAndAnalytics />,
+      "0-7": <Reports />,
       "0-8": <SystemSettings />,
       "1-0": <EmployeeApproval />,
       "1-1": <ProductApproval />,

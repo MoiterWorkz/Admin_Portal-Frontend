@@ -49,3 +49,8 @@ export const fileToBase64 = (file) => {
     reader.onerror = (error) => reject(error);
   });
 };
+
+export const currency = (value) =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(
+    value
+  );

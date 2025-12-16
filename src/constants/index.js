@@ -63,6 +63,14 @@ export const inputStyle =
 
 export const paginationStyle =
   "w-6 h-6 flex items-center justify-center rounded-md primary-bg text-black text-[12px]";
+export const paginationTextStyle =
+  "inline-flex items-center justify-center px-3 text-sm font-medium";
+
+const cmnBtn =
+  "inline-flex items-center justify-center whitespace-nowrap font-medium transition-all rounded-md gap-1.5 h-8 px-3 text-xs hover:opacity-80";
+
+export const csvBtnStyle = `${cmnBtn} bg-green-500/10 text-green-400 border border-green-500/30`;
+export const xlsBtnStyle = `${cmnBtn} bg-blue-500/10 text-blue-400 border border-blue-500/30`;
 
 export const primaryColor = getComputedStyle(document.documentElement)
   .getPropertyValue("--primary-color")

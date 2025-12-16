@@ -364,3 +364,17 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   @apply text-[10px] sm:text-[12px];
   font-weight: normal;
 }
+
+.search-filter-input {
+  padding-left: 2.1rem;
+  padding-right: 0.75rem;
+  font-size: 12px;
+  background: #181d2a;
+  color: #e5e7eb;
+  border-radius: 5px;
+  border: 1px solid var(--borderBg-color);
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color);
+  }
+}
