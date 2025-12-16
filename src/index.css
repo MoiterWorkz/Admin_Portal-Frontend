@@ -378,3 +378,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     border-color: var(--primary-color);
   }
 }
+.white-color-font {
+  color: var(--white-color);
+  @apply text-[16px] sm:text-[14px];
+  font-weight: normal;
+}
