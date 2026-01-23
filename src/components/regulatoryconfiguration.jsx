@@ -32,10 +32,12 @@ import {
   createRegulatory,
   getRegulatorData,
   updateRegulatory,
+  cloneRegulatory
 } from "../services/service";
 // import { PencilIcon, Plus,SquarePen  } from "lucide-react";
 
 export default function RegulatoryConfig() {
+  const [isCloneMode, setIsCloneMode] = useState(false);
   const [configurations, setConfigurations] = useState([]);
   const [form, setForm] = useState({});
   const [formOpen, setformOpen] = useState(false);
@@ -155,6 +157,28 @@ export default function RegulatoryConfig() {
     fetchConfigurations();
     setForm(getDefaultForm(ip, username));
   }, [ip]);
+  const handleClone = (data) => {
+    const clonedData = {
+      ...getDefaultForm(ip, username),
+      ...data,
+
+      // ❌ remove identity
+      logId: uuidv4(),
+      productId: undefined,
+
+      // ✅ force user input
+      effectiveDate: "",
+      effectiveTime: "",
+    };
+
+    setForm(clonedData);
+    setEditingId(null);
+    editingIdRef.current = null;
+
+    setIsUpdate(false);
+    setIsCloneMode(true); // 🔥
+    setformOpen(true);
+  };
 
   const fetchConfigurations = async () => {
     try {
@@ -185,32 +209,41 @@ export default function RegulatoryConfig() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const confirmAction = await customConfirm(
       "Are you sure you want to continue?"
     );
     if (!confirmAction) return;
+
     const isEditing = editingIdRef.current !== null;
 
-    // Convert arrays or objects to match API schema
+    // ---------------- PAYLOAD BUILD ----------------
     const payload = {
       ...form,
       logId: form.logId || uuidv4(),
-      productId: editingIdRef.current || form.productId,
+
+      // ❗ productId only for edit
+      productId: isEditing ? editingIdRef.current : undefined,
+
       transactionReportableFlags:
         typeof form.transactionReportableFlags === "string"
           ? form.transactionReportableFlags
-          : JSON.stringify(form.transactionReportableFlags || {}), // Ensure string
-      // ✅ Map UI -> API
+          : JSON.stringify(form.transactionReportableFlags || {}),
+
       topupMethod: form.topupMethod || "",
 
       allowedChannels: Array.isArray(form.allowedChannels)
         ? form.allowedChannels
         : form.allowedChannels
-        ? [form.allowedChannels]
-        : [],
+          ? [form.allowedChannels]
+          : [],
 
-      allowedMccCodes: undefined, // Remove if not part of schema
-      ...(isEditing ? { modifiedBy: username } : { createdBy: username }),
+      allowedMccCodes: undefined,
+
+      ...(isEditing
+        ? { modifiedBy: username }
+        : { createdBy: username }),
+
       metadata: {
         ...form.metadata,
         ipAddress: ip || "0.0.0.0",
@@ -218,26 +251,24 @@ export default function RegulatoryConfig() {
         headers: "frontend",
         channel: "web",
         auditMetadata: {
-          createdBy: username,
+          createdBy: isEditing
+            ? form.metadata.auditMetadata.createdBy
+            : username,
           createdDate: isEditing
             ? form.metadata.auditMetadata.createdDate
             : new Date().toISOString(),
           modifiedBy: username,
           modifiedDate: new Date().toISOString(),
-          header: form.metadata?.auditMetadata?.header || {
-            additionalProp1: {
-              options: { propertyNameCaseInsensitive: true },
-              parent: "string",
-              root: "string",
-            },
-          },
+          header:
+            form.metadata?.auditMetadata?.header || {},
         },
       },
     };
-    // console.log(payload)
-    // console.log(JSON.stringify(payload, null, 2));
-    const isCategoryExist = categoriesCheck();
-    if (!editingId) {
+
+    // ---------------- CATEGORY CHECK ----------------
+    // ❗ Skip duplicate check for EDIT & CLONE
+    if (!isEditing && !isCloneMode) {
+      const isCategoryExist = categoriesCheck();
       if (isCategoryExist) {
         alert("Subcategory already exists. Please use a different one.");
         return;
@@ -245,26 +276,50 @@ export default function RegulatoryConfig() {
     }
 
     try {
-      const res = isEditing
-        ? await updateRegulatory(payload)
-        : await createRegulatory(payload);
-      const isNoUpdate = res.data.message === noUpdate;
-      if (isNoUpdate) {
-        alert("No changes Made");
+      let res;
+
+      // ---------------- API ROUTING ----------------
+      if (isCloneMode) {
+        // ✅ CLONE API ONLY
+        res = await cloneRegulatory(payload);
+      } else if (isEditing) {
+        // ✅ UPDATE
+        res = await updateRegulatory(payload);
       } else {
-        setForm(getDefaultForm(ip, username));
-        alert("Configuration saved successfully!");
-        setEditingId(null);
-        editingIdRef.current = null;
-        setTimeout(() => {
-          setformOpen((prev) => !prev);
-        }, 1000);
+        // ✅ CREATE
+        res = await createRegulatory(payload);
       }
+
+      const isNoUpdate = res?.data?.message === noUpdate;
+
+      if (isNoUpdate) {
+        alert("No changes made");
+        return;
+      }
+
+      // ---------------- SUCCESS RESET ----------------
+      alert(
+        isCloneMode
+          ? "Configuration cloned successfully!"
+          : "Configuration saved successfully!"
+      );
+
+      setForm(getDefaultForm(ip, username));
+      setEditingId(null);
+      editingIdRef.current = null;
+      setIsCloneMode(false);
+
+      setTimeout(() => {
+        setformOpen(false);
+      }, 800);
+
       fetchConfigurations();
     } catch (err) {
+      console.error(err);
       alert("Failed to connect API. Try again later");
     }
   };
+
 
   const handleEdit = (data) => {
     setForm({
@@ -336,8 +391,8 @@ export default function RegulatoryConfig() {
       [name]: numberFields.includes(name)
         ? Number(value)
         : type === "checkbox"
-        ? checked
-        : value,
+          ? checked
+          : value,
     }));
   };
 
@@ -441,6 +496,7 @@ export default function RegulatoryConfig() {
               setformOpen((prev) => !prev);
               setIsUpdate(false);
               setForm("");
+              setIsCloneMode(false);
             }}
           >
             {formOpen ? (
@@ -496,9 +552,8 @@ export default function RegulatoryConfig() {
                   onChange={handleChange}
                   required // ✅ ensures browser validation
                   disabled={editingId}
-                  className={`${
-                    editingId && "cursor-not-allowed"
-                  }  form-input p-2 border border-gray-300 rounded text-xs sm:text-sm`}
+                  className={`${editingId && "cursor-not-allowed"
+                    }  form-input p-2 border border-gray-300 rounded text-xs sm:text-sm`}
                 >
                   <option value="" disabled hidden>
                     Select
@@ -521,9 +576,8 @@ export default function RegulatoryConfig() {
                   placeholder="Enter sub category"
                   required
                   disabled={editingId}
-                  className={`${
-                    editingId && "cursor-not-allowed"
-                  }  form-input p-2 border border-gray-300 rounded text-xs sm:text-sm`}
+                  className={`${editingId && "cursor-not-allowed"
+                    }  form-input p-2 border border-gray-300 rounded text-xs sm:text-sm`}
                 />
               </div>
 
@@ -1001,6 +1055,48 @@ export default function RegulatoryConfig() {
             </div>
           </div>
 
+          {/* Effective Period – ONLY FOR CLONE */}
+          {isCloneMode && (
+            <div className="form-section p-4 bg-white rounded-lg shadow-sm mt-4">
+              <h3 className="section-title text-sm sm:text-lg font-semibold mb-4">
+                Effective Period
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Effective From */}
+                <div className="form-group flex flex-col">
+                  <label className="mb-1 text-xs sm:text-sm font-medium mandatory">
+                    Effective From
+                  </label>
+                  <input
+                    type="datetime-local"
+                    name="effectiveFrom"
+                    value={form.effectiveFrom || ""}
+                    onChange={handleChange}
+                    required
+                    className="form-input p-2 border border-gray-300 rounded text-xs sm:text-sm"
+                  />
+                </div>
+
+                {/* Effective To */}
+                <div className="form-group flex flex-col">
+                  <label className="mb-1 text-xs sm:text-sm font-medium mandatory">
+                    Effective To
+                  </label>
+                  <input
+                    type="datetime-local"
+                    name="effectiveTo"
+                    value={form.effectiveTo || ""}
+                    onChange={handleChange}
+                    required
+                    className="form-input p-2 border border-gray-300 rounded text-xs sm:text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+
           {/* Footer */}
           <div className="form-footer flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 text-xs sm:text-sm">
             {/* Left - Back */}
@@ -1017,7 +1113,7 @@ export default function RegulatoryConfig() {
               <button
                 type="button"
                 className="btn-outline-reset flex items-center justify-center gap-1.5 px-3 py-1.5 w-full sm:w-auto"
-                onClick={() => setForm(getDefaultForm(ip, username))}
+                onClick={() => {setForm(getDefaultForm(ip, username));setIsCloneMode(false)}}
               >
                 <RotateCcw className="icon w-3.5 h-3.5" /> Reset
               </button>
@@ -1089,7 +1185,7 @@ export default function RegulatoryConfig() {
                       <td>{cfg.programType}</td>
                       <td>{formattedKYCLevel}</td>
                       <td>{cfg.remarks || "-"}</td>
-                      <td>
+                      <td className="flex gap-1">
                         <button
                           className="header-icon-box"
                           onClick={() => {
@@ -1099,6 +1195,14 @@ export default function RegulatoryConfig() {
                           }}
                         >
                           <SquarePen size="12" className="primary-color" />
+                        </button>
+                        {/* Clone */}
+                        <button
+                          className="header-icon-box"
+                          onClick={() => handleClone(cfg)}
+                          title="Clone"
+                        >
+                          <File size={12} className="text-teal-400" />
                         </button>
                       </td>
                     </tr>
@@ -1124,11 +1228,10 @@ export default function RegulatoryConfig() {
           <button
             onClick={() => setCurrentPage(currentPage - 1)}
             disabled={currentPage === 1}
-            className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm w-full sm:w-auto justify-center ${
-              currentPage === 1
-                ? "prev-next-disabled-btn"
-                : "prev-next-active-btn"
-            }`}
+            className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm w-full sm:w-auto justify-center ${currentPage === 1
+              ? "prev-next-disabled-btn"
+              : "prev-next-active-btn"
+              }`}
           >
             <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" /> Prev
           </button>
@@ -1139,11 +1242,10 @@ export default function RegulatoryConfig() {
               <button
                 key={i}
                 onClick={() => setCurrentPage(i + 1)}
-                className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm ${
-                  currentPage === i + 1
-                    ? "active-pagination-btn"
-                    : "inactive-pagination-btn"
-                }`}
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm ${currentPage === i + 1
+                  ? "active-pagination-btn"
+                  : "inactive-pagination-btn"
+                  }`}
               >
                 {i + 1}
               </button>
@@ -1154,11 +1256,10 @@ export default function RegulatoryConfig() {
           <button
             onClick={() => setCurrentPage(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm w-full sm:w-auto justify-center ${
-              currentPage === totalPages
-                ? "prev-next-disabled-btn"
-                : "prev-next-active-btn"
-            }`}
+            className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm w-full sm:w-auto justify-center ${currentPage === totalPages
+              ? "prev-next-disabled-btn"
+              : "prev-next-active-btn"
+              }`}
           >
             Next <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
           </button>

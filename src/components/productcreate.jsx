@@ -24,6 +24,7 @@ import {
   getProductData,
   getRbiConfig,
   updateProduct,
+  cloneProduct
 } from "../services/service";
 import ErrorText from "./reusable/errorText";
 
@@ -80,9 +81,9 @@ const mapFormToApiSchema = (form, username, ip, isEditing = false, empId) => {
     allowedChannels: form.allowedChannels || [],
     allowedMccCodes: form.allowedMccCodes
       ? String(form.allowedMccCodes)
-          .split(",")
-          .map((c) => c.trim())
-          .filter(Boolean)
+        .split(",")
+        .map((c) => c.trim())
+        .filter(Boolean)
       : [],
     geoRestrictions: form.geoRestrictions || [],
     merchantWhitelistOnly: form.merchantWhitelistOnly ?? false,
@@ -174,7 +175,7 @@ const mapFormToApiSchema = (form, username, ip, isEditing = false, empId) => {
 export default function Productcreate() {
   const [configurations, setConfigurations] = useState([]);
   const [error, setError] = useState({});
-
+  const [isCloneMode, setIsCloneMode] = useState(false);
   const [formOpen, setformOpen] = useState(false);
   const [empId, setEmpId] = useState("");
   const [rbiConfig, setRbiConfig] = useState([]);
@@ -199,6 +200,36 @@ export default function Productcreate() {
     setCurrentPage(1);
   }, [searchTerm]);
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+  const handleClone = async (cfg) => {
+    // Ensure RBI config loaded
+    if (rbiConfig.length === 0) {
+      await fetchRBIConfigurations();
+    }
+
+    const rawTopup = cfg.topUpMethod || "";
+
+    const clonedForm = {
+      ...getDefaultForm(ip, username),
+      ...cfg,
+
+      // ❌ remove identity
+      productId: undefined,
+
+      // ✅ force user input
+      effectiveFrom: "",
+      effectiveTo: "",
+
+      topUpMethod: rawTopup
+        ? rawTopup.split(",").map((m) => m.trim())
+        : [],
+    };
+
+    setForm(clonedForm);
+    setIsEditing(false);
+    setEditingId(null);
+    setIsCloneMode(true);
+    setformOpen(true);
+  };
 
   const handleEdit = async (cfg) => {
     try {
@@ -254,8 +285,8 @@ export default function Productcreate() {
         const channels = Array.isArray(matchedRbiConfig.allowedChannels)
           ? matchedRbiConfig.allowedChannels
           : typeof matchedRbiConfig.allowedChannels === "string"
-          ? matchedRbiConfig.allowedChannels.split(",").map((c) => c.trim())
-          : [];
+            ? matchedRbiConfig.allowedChannels.split(",").map((c) => c.trim())
+            : [];
 
         formData.allowedChannels = channels;
         formData.kycLevelRequired =
@@ -349,6 +380,8 @@ export default function Productcreate() {
     dormantPeriodDays: 0,
     topUpMethod: "",
     productDescription: "",
+    effectiveFrom: "",
+    effectiveTo: "",
     metadata: {
       ipAddress: ip,
       userAgent: navigator.userAgent,
@@ -475,8 +508,8 @@ export default function Productcreate() {
       const channels = Array.isArray(matched.allowedChannels)
         ? matched.allowedChannels
         : typeof matched.allowedChannels === "string"
-        ? matched.allowedChannels.split(",").map((c) => c.trim())
-        : [];
+          ? matched.allowedChannels.split(",").map((c) => c.trim())
+          : [];
 
       const rawTopup = matched.topUpMethod || matched.topUpMethod || "";
 
@@ -533,52 +566,66 @@ export default function Productcreate() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (hasValidationErrors()) {
-      alert("Please fix all validation errors before submitting.");
-      focusFirstError(); // 👈 Automatically jump to the first wrong field
+      alert("Please fix validation errors");
+      focusFirstError();
       return;
     }
+
     const confirmAction = await customConfirm(
       "Are you sure you want to continue?"
     );
     if (!confirmAction) return;
+
     try {
-      // Map frontend form → backend schema
-      const payload = mapFormToApiSchema(form, username, ip, isEditing);
+      let payload = mapFormToApiSchema(form, username, ip, isEditing);
 
-      // console.log("Submitting mapped payload:", JSON.stringify(payload, null, 2));
+      // ✅ CLONE MODE PAYLOAD FIX
+      if (isCloneMode) {
+        if (!form.effectiveFrom || !form.effectiveTo) {
+          alert("Effective From and To are required for clone");
+          return;
+        }
 
-      // isEditing ? await createProduct(payload) : await updateProduct(payload);
-      // FIXED: correct API call
-      if (isEditing) {
+        payload.effectiveFrom = new Date(form.effectiveFrom).toISOString();
+        payload.effectiveTo = new Date(form.effectiveTo).toISOString();
+
+        // ❌ remove UI-only fields
+        delete payload.productId;
+      }
+
+      // 🔀 API routing
+      if (isCloneMode) {
+        await cloneProduct(payload);
+      } else if (isEditing) {
         await updateProduct(payload);
       } else {
         await createProduct(payload);
       }
 
       alert(
-        `Product configuration ${
-          isEditing ? "updated" : "created"
-        } successfully!`
+        isCloneMode
+          ? "Product cloned successfully!"
+          : isEditing
+            ? "Product updated successfully!"
+            : "Product created successfully!"
       );
-      await fetchConfigurations(); // refresh table after save
 
-      // Reset form and editing state
+      await fetchConfigurations();
+
+      // Reset
       setForm(getDefaultForm(ip, username));
       setIsEditing(false);
       setEditingId(null);
+      setIsCloneMode(false);
       setformOpen(false);
-
-      // console.log("Error saving product configuration:", payload);
-      // console.log(JSON.stringify(payload, null, 2));
     } catch (err) {
-      console.error(
-        "Error saving product configuration:",
-        err.response?.data || err.message
-      );
+      console.error(err);
       alert("Failed to save product configuration");
     }
   };
+
   const numberFields = [
     "cashLoadingLimit",
     "maxBalance",
@@ -606,8 +653,8 @@ export default function Productcreate() {
       [name]: numberFields.includes(name)
         ? Number(value)
         : type === "checkbox"
-        ? checked
-        : value,
+          ? checked
+          : value,
     }));
   };
 
@@ -771,7 +818,7 @@ export default function Productcreate() {
           <button
             className="btn-outline  flex items-center gap-1 w-full sm:w-auto justify-center"
             onClick={() => {
-              setformOpen((prev) => !prev), setForm("");
+              setformOpen((prev) => !prev), setForm("");  setIsCloneMode(false);
             }}
           >
             {formOpen ? (
@@ -849,9 +896,8 @@ export default function Productcreate() {
                   // disabled={!form.programType}
                   disabled={isUpdate}
                   onChange={(e) => handleSubCategoryChange(e.target.value)}
-                  className={`form-input p-2 border border-gray-300 rounded text-xs sm:text-sm ${
-                    !form.programType && "cursor-not-allowed"
-                  }`}
+                  className={`form-input p-2 border border-gray-300 rounded text-xs sm:text-sm ${!form.programType && "cursor-not-allowed"
+                    }`}
                 >
                   <option value="" disabled hidden>
                     Select
@@ -1406,13 +1452,51 @@ export default function Productcreate() {
               />
             </div>
           </div>
+          {/* ================= Effective Period (CLONE ONLY) ================= */}
+          {isCloneMode && (
+            <div className="form-section p-4 bg-white rounded-lg shadow-sm mt-4">
+              <h3 className="section-title text-sm sm:text-lg font-semibold mb-4">
+                Effective Period
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="form-group flex flex-col">
+                  <label className="mandatory text-xs sm:text-sm">
+                    Effective From
+                  </label>
+                  <input
+                    type="datetime-local"
+                    name="effectiveFrom"
+                    value={form.effectiveFrom ?? ""}
+                    onChange={handleChange}
+                    required
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-group flex flex-col">
+                  <label className="mandatory text-xs sm:text-sm">
+                    Effective To
+                  </label>
+                  <input
+                    type="datetime-local"
+                    name="effectiveTo"
+                    value={form.effectiveTo ?? ""}
+                    onChange={handleChange}
+                    required
+                    className="form-input"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ================= Footer ================= */}
           <div className="form-footer flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mt-4 px-2 sm:px-0">
             <button
               type="button"
               className="btn-outline-back flex items-center justify-center w-full sm:w-auto px-3 py-2 text-sm sm:text-base gap-2"
-              onClick={() => setformOpen(false)}
+              onClick={() => {setformOpen(false);  setIsCloneMode(false);}}
             >
               <ArrowLeft className="icon" /> Back
             </button>
@@ -1433,8 +1517,13 @@ export default function Productcreate() {
                 className="btn-outline-reset flex items-center justify-center w-full sm:w-auto px-3 py-2 text-sm sm:text-base gap-2"
               >
                 <Save className="icon" />
-                {editingId ? "Update Configuration" : "Create Configuration"}
+                {isCloneMode
+                  ? "Clone Configuration"
+                  : editingId
+                    ? "Update Configuration"
+                    : "Create Configuration"}
               </button>
+
             </div>
           </div>
         </form>
@@ -1491,22 +1580,32 @@ export default function Productcreate() {
                       <td>{formattedKYCLevel || "-"}</td>
                       <td>
                         <span
-                          className={` px-2 py-1 rounded text-[10px] ${
-                            cfg.isActive ? "checker" : "superuser"
-                          }`}
+                          className={` px-2 py-1 rounded text-[10px] ${cfg.isActive ? "checker" : "superuser"
+                            }`}
                         >
                           {cfg.isActive ? "active" : "Inactive"}
                         </span>
                       </td>
                       <td>{cfg.remarks || "-"}</td>
-                      <td>
+                      <td className="flex gap-2">
+                        {/* Edit */}
                         <button
                           className="header-icon-box"
                           onClick={() => handleEdit(cfg)}
                         >
                           <SquarePen className="primary-color w-3 h-3" />
                         </button>
+
+                        {/* Clone */}
+                        <button
+                          className="header-icon-box"
+                          onClick={() => handleClone(cfg)}
+                          title="Clone"
+                        >
+                          <PackagePlus className="text-teal-400 w-3 h-3" />
+                        </button>
                       </td>
+
                     </tr>
                   );
                 })}
@@ -1525,11 +1624,10 @@ export default function Productcreate() {
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm w-full sm:w-auto justify-center  ${
-              currentPage === 1
-                ? "prev-next-disabled-btn"
-                : "prev-next-active-btn"
-            }`}
+            className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm w-full sm:w-auto justify-center  ${currentPage === 1
+              ? "prev-next-disabled-btn"
+              : "prev-next-active-btn"
+              }`}
           >
             <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" /> Prev
           </button>
@@ -1539,11 +1637,10 @@ export default function Productcreate() {
               <button
                 key={i}
                 onClick={() => handlePageChange(i + 1)}
-                className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm ${
-                  currentPage === i + 1
-                    ? "active-pagination-btn"
-                    : "inactive-pagination-btn"
-                }`}
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm ${currentPage === i + 1
+                  ? "active-pagination-btn"
+                  : "inactive-pagination-btn"
+                  }`}
               >
                 {i + 1}
               </button>
@@ -1553,11 +1650,10 @@ export default function Productcreate() {
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm w-full sm:w-auto justify-center ${
-              currentPage === totalPages
-                ? "prev-next-disabled-btn"
-                : "prev-next-active-btn"
-            }`}
+            className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm w-full sm:w-auto justify-center ${currentPage === totalPages
+              ? "prev-next-disabled-btn"
+              : "prev-next-active-btn"
+              }`}
           >
             Next <ChevronRight className="w-4 h-4" />
           </button>

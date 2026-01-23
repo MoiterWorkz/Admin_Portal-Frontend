@@ -183,6 +183,7 @@ export const MerchantDiscountRateCreate = (payload) =>
     logId: uuidv4(),
   });
 
+
 //----------------PUT METHOD--------------------
 export const DepartmentUpdate = (payload) =>
   putRequest(`${API_BASE_URL}/ums/api/UserManagement/department_update`, {
@@ -334,6 +335,11 @@ export const updateProduct = (payload) =>
     payload
   );
 
+export const cloneProduct = (payload) =>
+  postRequest(
+    `${API_BASE_URL}${path}/Product/cloneProductConfiguration`,
+    payload
+  );
 //dashboard
 export const getDashboardData = (endpoint) =>
   getRequest(`${API_BASE_URL}${fesPath}/${endpoint}`);
@@ -346,6 +352,9 @@ export const createRegulatory = (payload) =>
 
 export const updateRegulatory = (payload) =>
   putRequest(`${API_BASE_URL}${path}/Product/updateRbiConfiguration`, payload);
+
+export const cloneRegulatory = (payload) =>
+  postRequest(`${API_BASE_URL}${path}/Product/cloneRbiConfiguration`, payload)
 
 // ✅ Get user type summary
 export const getUserTypeSummary = () =>
