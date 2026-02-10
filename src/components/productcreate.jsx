@@ -10,6 +10,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Copy,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import usePublicIp from "../hooks/usePublicIp";
@@ -27,6 +28,18 @@ import {
   cloneProduct
 } from "../services/service";
 import ErrorText from "./reusable/errorText";
+
+
+// 🔹 ENUM NORMALIZERS (DB-safe)
+const normalizeComplianceStatus = (val) => {
+  if (!val) return "COMPLIANT";
+  return val.toUpperCase().replace("-", "_");
+};
+
+const normalizeRedemptionType = (val) => {
+  if (!val) return "BANK";
+  return val.toUpperCase();
+};
 
 // 🔹 Mapper function
 const mapFormToApiSchema = (form, username, ip, isEditing = false, empId) => {
@@ -111,6 +124,41 @@ const mapFormToApiSchema = (form, username, ip, isEditing = false, empId) => {
       ? form.topUpMethod.join(",")
       : form.topUpMethod || "",
     expiryPeriod: form.expiryPeriod ?? 0,
+
+    // 🔹 RBI / Compliance mapping
+    rbiClauseReference: form.rbiClauseReference || "",
+
+    kycUpgradeAllowed: form.kycUpgradeAllowed ?? false,
+    kycUpgradeDeadlineDays: form.kycUpgradeDeadlineDays ?? 0,
+
+    predefinedBeneficiaryRequired: form.predefinedBeneficiaryRequired ?? false,
+    beneficiaryCoolingPeriodHours: form.beneficiaryCoolingPeriodHours ?? 0,
+
+    allowTransferWithoutBeneficiary:
+      form.allowTransferWithoutBeneficiary ?? false,
+
+    interoperabilityRequired: form.interoperabilityRequired ?? false,
+    escrowRequired: form.escrowRequired ?? false,
+
+    allowWalletBlock: form.allowWalletBlock ?? false,
+    allowWalletUnblock: form.allowWalletUnblock ?? false,
+
+    redeemOnWalletBlock: form.redeemOnWalletBlock ?? false,
+    redeemOnWalletClosure: form.redeemOnWalletClosure ?? false,
+
+
+    grievanceSlaHours: form.grievanceSlaHours ?? 0,
+
+    // ⚠️ ENUM-SAFE (DB CHECK CONSTRAINT)
+    complianceStatus: normalizeComplianceStatus(form.complianceStatus),
+
+    redemptionDestinationType: normalizeRedemptionType(
+      form.redemptionDestinationType
+    ),
+
+    ombudsmanApplicable: form.ombudsmanApplicable ?? false,
+
+
 
     // ✅ REQUIRED BY API (missing earlier)
     createdBy: form.createdBy || "ajith",
@@ -382,6 +430,27 @@ export default function Productcreate() {
     productDescription: "",
     effectiveFrom: "",
     effectiveTo: "",
+
+    // 🔹 RBI / Compliance fields
+    rbiClauseReference: "",
+    kycUpgradeAllowed: false,
+    kycUpgradeDeadlineDays: 0,
+    predefinedBeneficiaryRequired: false,
+    beneficiaryCoolingPeriodHours: 0,
+    allowTransferWithoutBeneficiary: false,
+    interoperabilityRequired: false,
+    escrowRequired: false,
+    allowWalletBlock: false,
+    allowWalletUnblock: false,
+    redeemOnWalletBlock: false,
+    redeemOnWalletClosure: false,
+    redemptionDestinationType: "", // IMPORTANT: enum-safe value later
+    grievanceSlaHours: 0,
+    ombudsmanApplicable: false,
+    complianceStatus: "", // IMPORTANT: enum-safe value later
+
+
+
     metadata: {
       ipAddress: ip,
       userAgent: navigator.userAgent,
@@ -818,7 +887,7 @@ export default function Productcreate() {
           <button
             className="btn-outline  flex items-center gap-1 w-full sm:w-auto justify-center"
             onClick={() => {
-              setformOpen((prev) => !prev), setForm("");  setIsCloneMode(false);
+              setformOpen((prev) => !prev), setForm(""); setIsCloneMode(false);
             }}
           >
             {formOpen ? (
@@ -1053,6 +1122,69 @@ export default function Productcreate() {
               </div>
             </div>
           </div>
+
+          {/* ================= RBI & Compliance ================= */}
+          <div className="form-section bg-[#0d0f13] p-4 rounded-md border border-gray-800">
+            <h3 className="section-title primary-color mb-4">
+              RBI & Compliance
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              <div className="form-group">
+                <label>RBI Clause Reference</label>
+                <input
+                  type="text"
+                  name="rbiClauseReference"
+                  value={form.rbiClauseReference}
+                  onChange={handleChange}
+                  className="form-input"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Compliance Status</label>
+                <select
+                  name="complianceStatus"
+                  value={form.complianceStatus}
+                  onChange={handleChange}
+                  className="form-input"
+                >
+                  <option value="COMPLIANT">Compliant</option>
+                  <option value="NON_COMPLIANT">Non-Compliant</option>
+                  <option value="UNDER_REVIEW">Under Review</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Redemption Destination</label>
+                <select
+                  name="redemptionDestinationType"
+                  value={form.redemptionDestinationType}
+                  onChange={handleChange}
+                  className="form-input"
+                >
+                  <option value="BANK">Bank</option>
+                  <option value="WALLET">Wallet</option>
+                  <option value="UPI">UPI</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Grievance SLA (Hours)</label>
+                <input
+                  type="number"
+                  name="grievanceSlaHours"
+                  value={form.grievanceSlaHours}
+                  onChange={handleChange}
+                  className="form-input"
+                />
+              </div>
+
+            </div>
+          </div>
+
+
 
           {/* ================= Transaction Limits ================= */}
           <div className="form-section bg-[#0d0f13] p-4 rounded-md border border-gray-800">
@@ -1452,6 +1584,51 @@ export default function Productcreate() {
               />
             </div>
           </div>
+
+
+          {/* complaince table section*/}
+          <div className="form-section">
+            <h3 className="section-title primary-color mb-4">
+              Complaince Table
+            </h3>
+            {[
+              { label: "KYC Upgrade Allowed", field: "kycUpgradeAllowed" },
+              { label: "Predefined Beneficiary Required", field: "predefinedBeneficiaryRequired" },
+              { label: "Allow Transfer Without Beneficiary", field: "allowTransferWithoutBeneficiary" },
+              { label: "Interoperability Required", field: "interoperabilityRequired" },
+              { label: "Escrow Required", field: "escrowRequired" },
+              { label: "Allow Wallet Block", field: "allowWalletBlock" },
+              { label: "Allow Wallet Unblock", field: "allowWalletUnblock" },
+              { label: "Redeem on Wallet Block", field: "redeemOnWalletBlock" },
+              { label: "Redeem on Wallet Closure", field: "redeemOnWalletClosure" },
+              { label: "Ombudsman Applicable", field: "ombudsmanApplicable" },
+            ].map(({ label, field }) => (
+              <div key={field} className="compliance-row flex justify-between">
+                <span>{label}</span>
+                <div className="flex gap-3">
+                  <label>
+                    <input
+                      type="radio"
+                      name={field}
+                      value="yes"
+                      checked={form[field] === true}
+                      onChange={handleBooleanSelect}
+                    /> Yes
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name={field}
+                      value="no"
+                      checked={form[field] === false}
+                      onChange={handleBooleanSelect}
+                    /> No
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
+
           {/* ================= Effective Period (CLONE ONLY) ================= */}
           {isCloneMode && (
             <div className="form-section p-4 bg-white rounded-lg shadow-sm mt-4">
@@ -1496,7 +1673,7 @@ export default function Productcreate() {
             <button
               type="button"
               className="btn-outline-back flex items-center justify-center w-full sm:w-auto px-3 py-2 text-sm sm:text-base gap-2"
-              onClick={() => {setformOpen(false);  setIsCloneMode(false);}}
+              onClick={() => { setformOpen(false); setIsCloneMode(false); }}
             >
               <ArrowLeft className="icon" /> Back
             </button>
@@ -1602,7 +1779,7 @@ export default function Productcreate() {
                           onClick={() => handleClone(cfg)}
                           title="Clone"
                         >
-                          <PackagePlus className="text-teal-400 w-3 h-3" />
+                          <Copy className="text-teal-400 w-3 h-3" />
                         </button>
                       </td>
 

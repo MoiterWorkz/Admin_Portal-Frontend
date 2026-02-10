@@ -12,6 +12,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Copy,
 } from "lucide-react";
 import { useEffect, useRef, useState, useMemo } from "react";
 import usePublicIp from "../hooks/usePublicIp";
@@ -117,7 +118,26 @@ export default function RegulatoryConfig() {
     expiryWarningDays: 0,
     expiryPeriod: 0,
     dormantPeriodDays: 0,
-    topupMethod: "",
+    topUpMethod: "",
+
+    rbiClauseReference: "",
+    kycUpgradeAllowed: false,
+    kycUpgradeDeadlineDays: 0,
+    predefinedBeneficiaryRequired: false,
+    beneficiaryCoolingPeriodHours: 0,
+    allowTransferWithoutBeneficiary: false,
+    interoperabilityRequired: false,
+    escrowRequired: false,
+    allowWalletBlock: false,
+    allowWalletUnblock: false,
+    redeemOnWalletBlock: false,
+    redeemOnWalletClosure: false,
+    redemptionDestinationType: "",
+    grievanceSlaHours: 0,
+    ombudsmanApplicable: false,
+    complianceStatus: "",
+
+
     ...(editingId ? { modifiedBy: username } : { createdBy: username }),
     metadata: {
       ipAddress: ip,
@@ -230,7 +250,7 @@ export default function RegulatoryConfig() {
           ? form.transactionReportableFlags
           : JSON.stringify(form.transactionReportableFlags || {}),
 
-      topupMethod: form.topupMethod || "",
+      topUpMethod: form.topUpMethod || "",
 
       allowedChannels: Array.isArray(form.allowedChannels)
         ? form.allowedChannels
@@ -239,6 +259,29 @@ export default function RegulatoryConfig() {
           : [],
 
       allowedMccCodes: undefined,
+
+      ProgramType: form.programType,
+      CardType: form.cardType,
+      Currency: form.currency || "INR",
+      IssuerType: form.issuerType || "Bank",
+      KycLevelRequired: form.kycLevelRequired,
+      RiskProfile: form.riskProfile,
+
+      EligibleCustomerTypes:
+        form.eligibleCustomerTypes?.length
+          ? form.eligibleCustomerTypes
+          : ["Individual"],
+
+      EmploymentTypesAllowed:
+        form.employmentTypesAllowed?.length
+          ? form.employmentTypesAllowed
+          : ["Salaried"],
+
+      GeoRestrictions:
+        form.geoRestrictions?.length
+          ? form.geoRestrictions
+          : ["IN"],
+
 
       ...(isEditing
         ? { modifiedBy: username }
@@ -264,7 +307,8 @@ export default function RegulatoryConfig() {
         },
       },
     };
-
+    // console.log(JSON.stringify(payload, null, 2));
+    // console.log(payload)
     // ---------------- CATEGORY CHECK ----------------
     // ❗ Skip duplicate check for EDIT & CLONE
     if (!isEditing && !isCloneMode) {
@@ -352,10 +396,16 @@ export default function RegulatoryConfig() {
     "expiryWarningDays",
     "dormantPeriodDays",
     "expiryPeriod",
+
+
+
+    "kycUpgradeDeadlineDays",
+    "beneficiaryCoolingPeriodHours",
+    "grievanceSlaHours",
   ];
 
   const toggleLoading = (method) => {
-    let current = form.topupMethod || ""; // always a string
+    let current = form.topUpMethod || ""; // always a string
     let list = current ? current.split(",") : [];
 
     if (list.includes(method)) {
@@ -366,7 +416,7 @@ export default function RegulatoryConfig() {
 
     setForm({
       ...form,
-      topupMethod: list.join(","), // save as string
+      topUpMethod: list.join(","), // save as string
     });
   };
 
@@ -495,7 +545,7 @@ export default function RegulatoryConfig() {
             onClick={() => {
               setformOpen((prev) => !prev);
               setIsUpdate(false);
-              setForm("");
+              // setForm("");
               setIsCloneMode(false);
             }}
           >
@@ -734,6 +784,83 @@ export default function RegulatoryConfig() {
               </div>
             </div>
           </div>
+
+          {/* RBI & Wallet Compliance Section*/}
+          <div className="form-section p-4 bg-white rounded-lg shadow-sm">
+            <h3 className="section-title text-sm sm:text-lg font-semibold mb-4">
+              RBI & Wallet Compliance
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              {/* RBI Clause */}
+              <div className="form-group flex flex-col">
+                <label className="text-sm font-medium">
+                  RBI Clause Reference
+                </label>
+                <input
+                  type="text"
+                  name="rbiClauseReference"
+                  value={form.rbiClauseReference}
+                  onChange={handleChange}
+                  className="form-input"
+                  placeholder="Enter RBI clause"
+                />
+              </div>
+
+              {/* Compliance Status */}
+              <div className="form-group flex flex-col">
+                <label className="text-sm font-medium">
+                  Compliance Status
+                </label>
+                <select
+                  name="complianceStatus"
+                  value={form.complianceStatus}
+                  onChange={handleChange}
+                  className="form-input"
+                >
+                  <option value="">Select</option>
+                  <option value="COMPLIANT">Compliant</option>
+                  <option value="NOT_COMPLIANT">Non Compliant</option>
+                  <option value="PARTIAL">Partial</option>
+                </select>
+              </div>
+
+              {/* Redemption Destination */}
+              <div className="form-group flex flex-col">
+                <label className="text-sm font-medium">
+                  Redemption Destination Type
+                </label>
+                <select
+                  name="redemptionDestinationType"
+                  value={form.redemptionDestinationType}
+                  onChange={handleChange}
+                  className="form-input"
+                >
+                  <option value="">Select</option>
+                  <option value="ORIGINAL_SOURCE">Original Source</option>
+                  <option value="FIRST_RECHARGE">First Recharge</option>
+                  <option value="BANK">Bank</option>
+                </select>
+              </div>
+
+              {/* SLA */}
+              <div className="form-group flex flex-col">
+                <label className="text-sm font-medium">
+                  Grievance SLA (Hours)
+                </label>
+                <input
+                  type="number"
+                  name="grievanceSlaHours"
+                  value={form.grievanceSlaHours || ""}
+                  onChange={handleChange}
+                  className="form-input"
+                />
+              </div>
+            </div>
+          </div>
+
+
 
           {/* Transaction Limits */}
           <div className="form-section bg-[#0d0f13] p-4 rounded-md border border-gray-800">
@@ -974,7 +1101,7 @@ export default function RegulatoryConfig() {
                 </h4>
                 <div className="flex flex-col gap-3">
                   {options.map((method) => {
-                    const checked = (form.topupMethod || "")
+                    const checked = (form.topUpMethod || "")
                       .split(",")
                       .includes(method);
 
@@ -1055,6 +1182,50 @@ export default function RegulatoryConfig() {
             </div>
           </div>
 
+          {/* complaince table section*/}
+
+          <div className="form-section">
+            <h3 className="section-title primary-color mb-4">
+              Complaince Table
+            </h3>
+            {[
+              { label: "KYC Upgrade Allowed", field: "kycUpgradeAllowed" },
+              { label: "Predefined Beneficiary Required", field: "predefinedBeneficiaryRequired" },
+              { label: "Allow Transfer Without Beneficiary", field: "allowTransferWithoutBeneficiary" },
+              { label: "Interoperability Required", field: "interoperabilityRequired" },
+              { label: "Escrow Required", field: "escrowRequired" },
+              { label: "Allow Wallet Block", field: "allowWalletBlock" },
+              { label: "Allow Wallet Unblock", field: "allowWalletUnblock" },
+              { label: "Redeem on Wallet Block", field: "redeemOnWalletBlock" },
+              { label: "Redeem on Wallet Closure", field: "redeemOnWalletClosure" },
+              { label: "Ombudsman Applicable", field: "ombudsmanApplicable" },
+            ].map(({ label, field }) => (
+              <div key={field} className="compliance-row flex justify-between">
+                <span>{label}</span>
+                <div className="flex gap-3">
+                  <label>
+                    <input
+                      type="radio"
+                      name={field}
+                      value="yes"
+                      checked={form[field] === true}
+                      onChange={handleBooleanSelect}
+                    /> Yes
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name={field}
+                      value="no"
+                      checked={form[field] === false}
+                      onChange={handleBooleanSelect}
+                    /> No
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
+
           {/* Effective Period – ONLY FOR CLONE */}
           {isCloneMode && (
             <div className="form-section p-4 bg-white rounded-lg shadow-sm mt-4">
@@ -1079,7 +1250,7 @@ export default function RegulatoryConfig() {
                 </div>
 
                 {/* Effective To */}
-                <div className="form-group flex flex-col">
+                {/* <div className="form-group flex flex-col">
                   <label className="mb-1 text-xs sm:text-sm font-medium mandatory">
                     Effective To
                   </label>
@@ -1091,7 +1262,7 @@ export default function RegulatoryConfig() {
                     required
                     className="form-input p-2 border border-gray-300 rounded text-xs sm:text-sm"
                   />
-                </div>
+                </div> */}
               </div>
             </div>
           )}
@@ -1113,7 +1284,7 @@ export default function RegulatoryConfig() {
               <button
                 type="button"
                 className="btn-outline-reset flex items-center justify-center gap-1.5 px-3 py-1.5 w-full sm:w-auto"
-                onClick={() => {setForm(getDefaultForm(ip, username));setIsCloneMode(false)}}
+                onClick={() => { setForm(getDefaultForm(ip, username)); setIsCloneMode(false) }}
               >
                 <RotateCcw className="icon w-3.5 h-3.5" /> Reset
               </button>
@@ -1202,7 +1373,7 @@ export default function RegulatoryConfig() {
                           onClick={() => handleClone(cfg)}
                           title="Clone"
                         >
-                          <File size={12} className="text-teal-400" />
+                          <Copy size={12} className="text-teal-400" />
                         </button>
                       </td>
                     </tr>

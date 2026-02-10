@@ -58,7 +58,7 @@ export default function CheckersDashboardLayout() {
         setModules(
           (parsed?.moduleAccess || []).map((m) => ({
             ...m,
-            screens: [...m.screens, "Ads"],
+            // screens: [...m.screens, "Ads"],
           }))
         );
       } catch (err) {

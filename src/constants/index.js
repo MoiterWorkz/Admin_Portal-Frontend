@@ -41,12 +41,11 @@ export const barChartColor = [
 export const channels = ["POS", "ECOM", "QR_Code", "ATM", "Fund_transfer"];
 
 export const options = [
-  "Payment Gateway",
-  "Credit Card",
-  "Debit Card",
+  "Verfied Bank account",
+  "Cash",
+  "Payment gateway",
   "Net Banking",
   "UPI",
-  "Cash",
 ];
 
 export const transErr = {

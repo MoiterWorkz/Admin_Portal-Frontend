@@ -3,11 +3,14 @@ import { BrowserRouter as Router } from "react-router-dom";
 import AppRoutes from "./AppRoutes";
 import { AlertProvider, useAlert } from "./components/AlertProvider";
 import ThemeSwitcher from "./components/themeSwitcher";
-// import "leaflet/dist/leaflet.css";
+import useSessionTimeout from "./utils/useSessionTimeout";
+
 function AppWrapper() {
   return (
     <AlertProvider>
-      <App />
+      <Router basename="/MW-Prepaid">
+        <App />
+      </Router>
     </AlertProvider>
   );
 }
@@ -15,21 +18,30 @@ function AppWrapper() {
 function App() {
   const [role, setRole] = useState("");
   const { showAlert } = useAlert();
-  // Override default alert
+
+  // 🔐 session timeout (NOW SAFE)
+  useSessionTimeout();
+
+  // override alert
   useEffect(() => {
     window.alert = (message) => {
-      showAlert(message, "info"); // default info type
+      showAlert(message, "info");
     };
   }, [showAlert]);
-  window.history.pushState(null, "", window.location.href);
-  window.addEventListener("popstate", function () {
+
+  // block back button
+  useEffect(() => {
     window.history.pushState(null, "", window.location.href);
-  });
+    const onPopState = () => {
+      window.history.pushState(null, "", window.location.href);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
   return (
     <>
-      <Router basename={"/MW-Prepaid"}>
-        <AppRoutes setRole={setRole} />
-      </Router>
+      <AppRoutes setRole={setRole} />
       <ThemeSwitcher />
     </>
   );
